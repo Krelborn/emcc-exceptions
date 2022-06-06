@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "mkdir -p build && cp src/index.html ./build && npm run build:emscripten",
-    "build:emscripten": "npm run docker -- emcc src/main.cpp --bind -fwasm-exceptions -s EXPORT_ES6=1 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['$getExceptionMessage', '$incrementExceptionRefcount', '$decrementExceptionRefcount']\" -s EXPORTED_FUNCTIONS=\"['_main', 'getExceptionMessage', '___get_exception_message','___cpp_exception', '___increment_wasm_exception_refcount', '___decrement_wasm_exception_refcount']\" -o ./build/main.js",
+    "build": "mkdir -p build && cp src/index.html ./build && node build.js",
     "docker": "docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) emscripten-test",
     "start": "npx serve ./build"
   },
@@ -13,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "serve": "^13.0.2"
+    "serve": "^13.0.2",
+    "shelljs": "^0.8.5"
   }
 }
