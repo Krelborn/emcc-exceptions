@@ -1,12 +1,18 @@
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <exception>
 #include <stdexcept>
+#include <string>
 
 using namespace std;
-class myexception : public exception
+using namespace emscripten;
+
+class MyException : public exception
 {
+public:
     virtual const char *what() const throw() { return "My exception happened"; }
-} myex;
+    int code() const { return 42; }
+};
 
 EMSCRIPTEN_KEEPALIVE extern "C" void throw_exc(int x)
 {
@@ -24,12 +30,32 @@ EMSCRIPTEN_KEEPALIVE extern "C" void throw_exc(int x)
     }
     if (x == 4)
     {
-        throw myex;
+        throw MyException();
     }
     if (x == 5)
     {
         throw "abc";
     }
+}
+
+/**
+ * Converts a C++ exception object pointer to a JS exception object which has the message and optional error code.
+ */
+val getMyException(intptr_t exceptionAddress)
+{
+    exception *exceptionPtr = reinterpret_cast<exception *>(exceptionAddress);
+
+    val jsException = val::object();
+    jsException.set("message", exceptionPtr->what());
+
+    // If it's our custom exception then include the error code
+    const MyException *exceptionWithErrorCode = dynamic_cast<const MyException *>(exceptionPtr);
+    if (exceptionWithErrorCode)
+    {
+        jsException.set("code", exceptionWithErrorCode->code());
+    }
+
+    return jsException;
 }
 
 int main()
@@ -39,7 +65,6 @@ int main()
         {
             try
             {
-                console.log("Testing?", i);
                 _throw_exc(i);
             }
             catch (p)
@@ -62,4 +87,9 @@ int main()
             }
         }
     });
+}
+
+EMSCRIPTEN_BINDINGS(Main)
+{
+    emscripten::function("getMyException", &getMyException);
 }

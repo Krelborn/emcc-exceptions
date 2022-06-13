@@ -9,8 +9,19 @@
 <body>
     <script type="module">
         import initialize from "/main.js";
-        initialize().then(() => {
-            console.log("Initialized");
+        initialize().then((module) => {
+            try {
+                module._throw_exc(4);
+            } catch (e) {
+                const test = module.getMyException(module.getCppExceptionThrownObjectFromWebAssemblyException(e));
+                console.log(test);
+
+                // Because we are catching and handling the exception in JS, the normal
+                // exception catching C++ code doesn't kick in, so we need to make sure we free
+                // the exception, if necessary. By incrementing and decrementing the refcount
+                // we trigger the free'ing of the exception if its refcount was zero.
+                module.decrementExceptionRefcount(e);
+            }
         });
     </script>
 </body>

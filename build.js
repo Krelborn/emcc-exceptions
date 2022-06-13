@@ -6,7 +6,7 @@ const shell = require('shelljs');
 const imageName = "emscripten-test";
 
 // The command to build the image that will be run in the docker container
-const emscriptenCommand = `emcc src/main.cpp --bind -fwasm-exceptions -s EXPORT_ES6=1 -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE="['\\$getExceptionMessage', '\\$incrementExceptionRefcount', '\\$decrementExceptionRefcount']" -s EXPORTED_FUNCTIONS="['_main', 'getExceptionMessage', '___get_exception_message', '___cpp_exception', '___increment_wasm_exception_refcount', '___decrement_wasm_exception_refcount']" -o ./build/main.js`;
+const emscriptenCommand = `emcc src/main.cpp -Oz --bind -fwasm-exceptions -s EXPORT_ES6=1 -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE="['\\$getExceptionMessage', '\\$getCppExceptionThrownObjectFromWebAssemblyException', '\\$decrementExceptionRefcount']" -s EXPORTED_FUNCTIONS="['_main', 'getCppExceptionThrownObjectFromWebAssemblyException', 'getExceptionMessage', 'decrementExceptionRefcount', '___get_exception_message', '___cpp_exception', '___cxa_increment_exception_refcount', '___cxa_decrement_exception_refcount', '___thrown_object_from_unwind_exception']" -o ./build/main.js`;
 
 // Run the command in the docker container
 shell.exec(`docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) ${imageName} ${emscriptenCommand}`);
